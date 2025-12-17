@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>水质类别自动判定系统 v2.2</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container nav-brand">
+            <h1>🌊 水质类别自动判定系统</h1>
+            <span class="version">v2.2 (智能表头版)</span>
+        </div>
+        <div class="container nav-desc">基于 GB3838-2002 标准，支持智能表头跳过、日期自动清洗及 pH 修约逻辑。</div>
+    </nav>
+
+    <div class="container">
+        <section class="control-panel">
+            <div class="panel-section">
+                <h3>1. 参数设置</h3>
+                <div class="form-group">
+                    <label>水体类型：</label>
+                    <div class="radio-group">
+                        <label><input type="radio" name="waterType" value="river" checked> 河流</label>
+                        <label><input type="radio" name="waterType" value="lake"> 湖库</label>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button id="btnTemplate" class="btn btn-outline">📥 下载数据模板</button>
+                    <button id="btnReset" class="btn btn-outline">↺ 重置系统</button>
+                </div>
+            </div>
+
+            <div class="panel-section upload-area">
+                <h3>2. 数据导入</h3>
+                <div id="dropZone" class="drop-zone">
+                    <div class="icon">📂</div>
+                    <p>拖拽 Excel 文件到此处或点击上传</p>
+                    <input type="file" id="fileInput" accept=".xlsx, .xls" hidden>
+                </div>
+                <div id="fileInfo" class="file-info hidden"></div>
+                <div id="validationMsg" class="validation-msg hidden"></div>
+            </div>
+
+            <div class="panel-section">
+                <h3>3. 执行操作</h3>
+                <div class="btn-group">
+                    <button id="btnAnalyze" class="btn btn-primary" disabled>🚀 开始自动判定</button>
+                    <button id="btnExport" class="btn btn-warning">📊 导出判定结果</button>
+                </div>
+                <p class="hint-text" style="font-size: 0.8rem; color: #999; margin-top: 10px;">* 系统会自动识别第一行或第二行作为表头</p>
+            </div>
+        </section>
+
+        <section id="resultSection" class="result-section hidden">
+            <div class="section-header">
+                <h2>判定结果列表</h2>
+                <div id="recordStats" class="version" style="color: var(--primary);">共 0 条记录</div>
+            </div>
+            <div class="table-container">
+                <table id="resultTable" class="result-table">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>断面/点位名称</th>
+                            <th>监测时间</th>
+                            <th>综合类别</th>
+                            <th>超标情况 (因子/倍数)</th>
+                            <th>详细数据</th>
+                        </tr>
+                    </thead>
+                    <tbody id="resultTableBody"></tbody>
+                </table>
+            </div>
+        </section>
+
+        <div class="info-section">
+            <div class="info-card">
+                <h3>标准限值简表 (GB3838-2002)</h3>
+                <table class="std-table">
+                    <thead>
+                        <tr><th>指标</th><th>Ⅰ类</th><th>Ⅱ类</th><th>Ⅲ类</th><th>Ⅳ类</th><th>Ⅴ类</th></tr>
+                    </thead>
+                    <tbody id="stdTableBody"></tbody>
+                </table>
+            </div>
+            <div class="info-card">
+                <h3>系统判定规则</h3>
+                <ul class="rules-list">
+                    <li><b>表头跳过：</b>若第一行非标准表头（如标题行），系统自动从第二行寻找表头。</li>
+                    <li><b>pH 修约：</b>依据标准要求，pH值 [5.5, 9.5) 区间修约后视为达标。</li>
+                    <li><b>一票否决：</b>综合类别取所有参与评价指标中最差的一个。</li>
+                    <li><b>超标倍数：</b>计算公式为 <code>(实测值 - Ⅲ类限值) / Ⅲ类限值</code>。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="script.js"></script>
+</body>
+</html>
